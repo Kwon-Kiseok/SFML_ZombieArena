@@ -1,5 +1,7 @@
 #include "Utils.h"
 
+std::random_device Utils::rd;
+std::mt19937 Utils::gen(rd());
 
 void Utils::SetOrigin(Transformable& tr, FloatRect bounds, PIVOTS preset)
 {
@@ -50,4 +52,10 @@ void Utils::SetOrigin(Text& text, PIVOTS preset)
 void Utils::SetOrigin(Shape& shape, PIVOTS preset)
 {
 	SetOrigin(shape, shape.getGlobalBounds(), preset);
+}
+
+int Utils::RandomRange(int min, int max)
+{
+	std::uniform_int_distribution<int> dis(min, max);
+	return dis(gen);
 }

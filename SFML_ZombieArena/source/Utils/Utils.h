@@ -1,5 +1,6 @@
 #pragma once
 #include "SFML/Graphics.hpp"
+#include <random>
 
 using namespace sf;
 
@@ -18,9 +19,14 @@ enum class PIVOTS
 
 class Utils
 {
+private:
+	static std::random_device rd;
+	static std::mt19937 gen;
 public:
 	static void SetOrigin(Transformable& tr, FloatRect bounds, PIVOTS preset);
 	static void SetOrigin(Sprite& sprite, PIVOTS preset);
 	static void SetOrigin(Text& text, PIVOTS preset);
 	static void SetOrigin(Shape& shape, PIVOTS preset);
+
+	static int RandomRange(int min, int max);
 };

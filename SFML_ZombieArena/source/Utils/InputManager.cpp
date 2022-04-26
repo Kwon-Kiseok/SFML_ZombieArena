@@ -1,4 +1,5 @@
 #include ".\InputManager.h"
+#include <cmath>
 
 std::map<Axis, AxisInfo> InputManager::mapAxis;
 std::list<Keyboard::Key> InputManager::OnKeysUp;
@@ -10,8 +11,13 @@ void InputManager::Init()
 	mapAxis.clear();
 
 	AxisInfo info;
+
 	info.axis = Axis::Horizontal;
 	info.positiveKeys.clear();
+
+	info.value = 0.f;
+	info.sensi = 3.f;
+	info.limit = 0.05f;
 
 	info.positiveKeys.push_back(Keyboard::D);
 	info.positiveKeys.push_back(Keyboard::Right);
@@ -25,6 +31,10 @@ void InputManager::Init()
 
 	info.axis = Axis::Vertical;
 	info.positiveKeys.clear();
+
+	info.value = 0.f;
+	info.sensi = 3.f;
+	info.limit = 0.05f;
 
 	info.positiveKeys.push_back(Keyboard::S);
 	info.positiveKeys.push_back(Keyboard::Down);
@@ -71,7 +81,49 @@ void InputManager::ProcessInput(const Event& event)
 	}
 }
 
-int InputManager::GetAxis(const std::list<Keyboard::Key>& positive, const std::list<Keyboard::Key>& negative)
+void InputManager::Update(float dt)
+{
+	for (auto it = mapAxis.begin(); it != mapAxis.end(); it++)
+	{
+		AxisInfo& ref = it->second;
+
+		// Axis
+		int axis = GetAxisRaw(ref.axis);
+
+		// d = (dir) * vt;
+		if (axis == 0)
+		{
+			axis = ref.value > 0 ? -1 : 1;
+			if (abs(ref.value) < ref.limit)
+			{
+				axis = 0;
+				ref.value = 0;
+			}
+		}
+		ref.value += axis * ref.sensi * dt;
+		if (ref.value > 1.f)
+		{
+			ref.value = 1.f;
+		}
+		else if (ref.value < -1.f)
+		{
+			ref.value = -1.f;
+		}
+	}
+
+}
+
+float InputManager::GetAxis(Axis axis)
+{
+	if (mapAxis.find(axis) != mapAxis.end())
+	{
+		return mapAxis[axis].value;
+	}
+
+	return 0.0f;
+}
+
+int InputManager::GetAxisRaw(const std::list<Keyboard::Key>& positive, const std::list<Keyboard::Key>& negative)
 {
 	int axis = 0;
 	bool isPositive = false, isNegative = false;
@@ -112,12 +164,12 @@ int InputManager::GetAxis(const std::list<Keyboard::Key>& positive, const std::l
 	return axis;
 }
 
-int InputManager::GetAxis(Axis axis)
+int InputManager::GetAxisRaw(Axis axis)
 {
 	auto pair = mapAxis.find(axis);
 	if (pair != mapAxis.end())
 	{
-		return GetAxis(pair->second.positiveKeys, pair->second.negativeKeys);
+		return GetAxisRaw(pair->second.positiveKeys, pair->second.negativeKeys);
 	}
 	return 0;
 }
@@ -126,14 +178,14 @@ int InputManager::GetAxisH()
 {
 	std::list<Keyboard::Key> pos(Keyboard::D, Keyboard::Right);
 	std::list<Keyboard::Key> nega(Keyboard::A, Keyboard::Left);
-	return GetAxis(pos, nega);
+	return GetAxisRaw(pos, nega);
 }
 
 int InputManager::GetAxisV()
 {
 	std::list<Keyboard::Key> pos(Keyboard::S, Keyboard::Down);
 	std::list<Keyboard::Key> nega(Keyboard::W, Keyboard::Up);
-	return GetAxis(pos, nega);
+	return GetAxisRaw(pos, nega);
 }
 
 bool InputManager::GetKeyDown(Keyboard::Key key)

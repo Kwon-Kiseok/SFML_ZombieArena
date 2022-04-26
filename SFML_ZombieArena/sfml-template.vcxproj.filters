@@ -11,6 +11,9 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{3644c676-450b-4024-b97e-15c41ef3bd53}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Enemy">
+      <UniqueIdentifier>{1fd3fce3-a6fc-4106-b82f-e553e4710383}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\player\player.cpp">
@@ -23,6 +26,12 @@
     <ClCompile Include="source\Utils\InputManager.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="source\Utils\TextureHolder.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Enemy\Zombie.cpp">
+      <Filter>Enemy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\player\player.h">
@@ -33,6 +42,12 @@
     </ClInclude>
     <ClInclude Include="source\Utils\InputManager.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Utils\TextureHolder.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Enemy\Zombie.h">
+      <Filter>Enemy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

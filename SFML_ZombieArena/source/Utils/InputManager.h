@@ -16,6 +16,11 @@ struct AxisInfo
 	Axis axis;
 	std::list<Keyboard::Key> positiveKeys;
 	std::list<Keyboard::Key> negativeKeys;
+
+
+	float sensi;
+	float limit;
+	float value; // -1.0 ~ 1.0
 };
 
 class InputManager
@@ -32,9 +37,12 @@ public:
 
 	static void ClearPrevInput();
 	static void ProcessInput(const Event& event);
+	static void Update(float dt);
 
-	static int GetAxis(const std::list<Keyboard::Key>& positive, const std::list<Keyboard::Key>& negative);
-	static int GetAxis(Axis axis);
+	static float GetAxis(Axis axis); // -1.0 ~ 1.0
+
+	static int GetAxisRaw(const std::list<Keyboard::Key>& positive, const std::list<Keyboard::Key>& negative);
+	static int GetAxisRaw(Axis axis); // -1, 0, 1
 	static int GetAxisH(); // 좌우 입력
 	static int GetAxisV(); // 상하 입력
 

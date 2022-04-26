@@ -1,14 +1,16 @@
 #include "player.h"
 #include "..\Utils\Utils.h"
 #include "..\Utils\InputManager.h"
+#include "..\Utils\TextureHolder.h"
 #include <cmath>
 
 Player::Player()
-	: speed(START_SPEED), health(START_HEALTH), maxHealth(START_HEALTH),
-	arena(), resolution(), tileSize(0.f), immuneMs(START_IMMUNE_MS)
+	: maxSpeed(START_SPEED), health(START_HEALTH), maxHealth(START_HEALTH),
+	arena(), resolution(), tileSize(0.f), immuneMs(START_IMMUNE_MS)//, velocity(0), accel(START_ACCEL)
+	, textureFileName("graphics/player.png")
 {
-	texture.loadFromFile("graphics/player.png");
-	sprite.setTexture(texture);
+	
+	sprite.setTexture(TextureHolder::GetTexture(textureFileName));
 
 	Utils::SetOrigin(sprite, PIVOTS::CENTER);
 }
@@ -21,6 +23,17 @@ void Player::Spawn(IntRect arena, Vector2i res, int tileSize)
 
 	position.x = this->arena.width * 0.5f;
 	position.y = this->arena.height * 0.5f;
+}
+
+void Player::Move(IntRect arena, Vector2f displacement)
+{
+	position += displacement;
+	// boundary
+	if (position.x < arena.left + 50.f || position.x > arena.left + arena.width - 50.f
+		|| position.y < arena.top + 50.f || position.y > arena.top + arena.height - 50.f)
+	{
+		position -= displacement;
+	}
 }
 
 bool Player::OnHitted(Time timeHit)
@@ -72,30 +85,47 @@ void Player::SetDirection(Vector2f dir)
 void Player::Update(float dt)
 {
 	// 사용자 입력
-	direction.x = InputManager::GetAxis(Axis::Horizontal);
-	direction.y = InputManager::GetAxis(Axis::Vertical);
+	float h = InputManager::GetAxis(Axis::Horizontal);
+	float v = InputManager::GetAxis(Axis::Vertical);
+	Vector2f dir(h, v);
 
-	float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+	float length = sqrt(dir.x * dir.x + dir.y * dir.y);
 
-	if(length != 0)
-		direction /= length;
-
-	position += direction * speed * dt;
+	// 입력이 있는 경우
+	if (length > 1)
+	{
+		dir /= length;
+		//lastDir = dir;
+		//// v = at
+		//// velocity = at
+		//velocity += accel * dt;
+		//if (velocity > maxSpeed)
+		//	velocity = maxSpeed;
+	}
+	/*else
+	{
+		velocity -= accel * dt;
+		if (velocity < 0.f)
+			velocity = 0.f;
+	}*/
+	Vector2f displacement = dir * maxSpeed * dt;
+	Move(arena, displacement);
 	sprite.setPosition(position);
+	//position += lastDir * velocity * dt; // d = vt;
+	//sprite.setPosition(position);
 
 	// 회전
 	Vector2i mousePos = InputManager::GetMousePosition();
 	Vector2i mouseDir;
-	//mouseDir.x = mousePos.x - resolution.x * 0.5f;
-	//mouseDir.y = mousePos.y - resolution.y * 0.5f;
-	mouseDir.x = mousePos.x - position.x;
-	mouseDir.y = mousePos.y - position.y;
+	mouseDir.x = mousePos.x - resolution.x * 0.5f;
+	mouseDir.y = mousePos.y - resolution.y * 0.5f;
+	//mouseDir.x = mousePos.x - position.x;
+	//mouseDir.y = mousePos.y - position.y;
 
 	// 사잇각
 	float radian = atan2(mouseDir.y, mouseDir.x);
 	float degree = (radian * 180.f) / 3.141592f;
 	sprite.setRotation(degree);
-
 }
 
 void Player::GetHealthItem(int amount)
@@ -114,7 +144,7 @@ void Player::GetHealthItem(int amount)
 
 void Player::UpgradeSpeed()
 {
-	speed += START_SPEED * 0.2;
+	maxSpeed += START_SPEED * 0.2;
 }
 
 void Player::UpgradeMaxHealth()
