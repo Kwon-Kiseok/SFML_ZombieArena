@@ -31,7 +31,7 @@ private:
 	static std::list<Keyboard::Key> OnKeysUp;
 	static std::list<Keyboard::Key> OnKeysDown; 
 	static std::list<Keyboard::Key> OnKeysPress; //눌려지고 있을 때
-
+	static std::list<Mouse::Button> OnButtonPress;
 public:
 	static void Init();
 
@@ -51,5 +51,6 @@ public:
 	static bool GetKeyUp(Keyboard::Key key);
 
 	static Vector2i GetMousePosition();
+	static bool GetLeftButtonDown(Mouse::Button button);
 };
 

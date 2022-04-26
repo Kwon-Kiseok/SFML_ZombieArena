@@ -38,6 +38,20 @@ Zombie::Zombie()
 	}
 }
 
+void Zombie::Move(IntRect arena, Vector2f displacement)
+{
+	position += displacement;
+	// boundary
+	if (position.x < arena.left + 50.f || position.x > arena.left + arena.width - 50.f)
+	{
+		position.x -= displacement.x;
+	}
+	if (position.y < arena.top + 50.f || position.y > arena.top + arena.height - 50.f)
+	{
+		position.y -= displacement.y;
+	}
+}
+
 bool Zombie::OnHitted()
 {
 	return false;
@@ -62,7 +76,7 @@ void Zombie::Spawn(float x, float y, ZombieTypes type)
 	sprite.setPosition(position);
 }
 
-void Zombie::Update(float dt, Vector2f playerPos)
+void Zombie::Update(float dt, Vector2f playerPos, IntRect arena)
 {
 	//
 	// 추격 방향 구하기
@@ -73,7 +87,8 @@ void Zombie::Update(float dt, Vector2f playerPos)
 
 	dir /= length;
 
-	position += dir * speed * dt;
+	Vector2f displacement = dir * speed * dt;
+	Move(arena,displacement);
 	sprite.setPosition(position);
 
 	// 회전

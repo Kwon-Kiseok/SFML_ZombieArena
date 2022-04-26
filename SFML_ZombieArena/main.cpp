@@ -3,6 +3,8 @@
 #include ".\source\Utils\InputManager.h"
 #include ".\source\player\player.h"
 #include ".\source\Enemy\Zombie.h"
+#include ".\source\Object\Bullet.h"
+#include ".\source\Object\Crosshair.h"
 #include "source/Utils/TextureHolder.h"
 #include <iostream>
 
@@ -64,16 +66,28 @@ void CreateZombies(std::vector<Zombie*>& zombies, int count, IntRect arena)
     }
     zombies.clear();
 
-    int offset = 25;
+    int offset = 85;
     int minX = arena.left + offset;
     int maxX = arena.width - offset;
     int minY = arena.top + offset;
     int maxY = arena.height - offset;
 
+    // 캐릭터 근처에서 안나오도록
+    int diff = 100;
+    int centerX = (arena.left + arena.width) / 2;
+    int centerY = (arena.top + arena.height) / 2;
+
     for (int i = 0; i < count; ++i)
     {
         int x = Utils::RandomRange(minX, maxX + 1);
         int y = Utils::RandomRange(minY, maxY + 1);
+
+        while ((x > centerX - diff && x < centerX + diff) && (y > centerY - diff && y < centerY + diff))
+        {
+            x = Utils::RandomRange(minX, maxX + 1);
+            y = Utils::RandomRange(minY, maxY + 1);
+        }
+
         ZombieTypes type = static_cast<ZombieTypes>(Utils::RandomRange(0, static_cast<int>(ZombieTypes::COUNT)-1));
         Zombie* zombie = new Zombie();
         zombie->Spawn(x, y, type);
@@ -91,7 +105,7 @@ int main()
     resolution.y = VideoMode::getDesktopMode().height;
 
     sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Zombie Arena!", Style::Default);
-    
+    window.setMouseCursorVisible(false);
     View mainView(FloatRect(0, 0, resolution.x, resolution.y));
 
     InputManager::Init();
@@ -103,8 +117,10 @@ int main()
     Player player;
     player.Spawn(ARENA, resolution, 0.f);
 
+    Crosshair crosshair;
+
     std::vector<Zombie*> zombies;
-    CreateZombies(zombies, 10, ARENA);
+    CreateZombies(zombies, 50, ARENA);
 
     Clock clock;
 
@@ -131,16 +147,15 @@ int main()
 
         InputManager::Update(dt.asSeconds());
 
-        std::cout << "horizon: " << InputManager::GetAxis(Axis::Horizontal)
-            << " vertical: " << InputManager::GetAxis(Axis::Vertical) << std::endl;
+        //std::cout << "horizon: " << InputManager::GetAxis(Axis::Horizontal) << " vertical: " << InputManager::GetAxis(Axis::Vertical) << std::endl;
 
         player.Update(dt.asSeconds());
 
         mainView.setCenter(player.GetPosition());
-
+        crosshair.Update(window);
         for (auto zombie : zombies)
         {
-            zombie->Update(dt.asSeconds(), player.GetPosition());
+            zombie->Update(dt.asSeconds(), player.GetPosition(), ARENA);
         }
 
         window.clear();
@@ -153,6 +168,9 @@ int main()
         }
 
         window.draw(player.GetSprite());
+        if(nullptr != player.GetBullet())
+            window.draw(player.GetBullet()->GetSprite());
+        window.draw(crosshair.GetSprite());
         window.display();
     }
 

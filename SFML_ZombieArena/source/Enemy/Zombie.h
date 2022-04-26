@@ -40,11 +40,12 @@ private:
 public:
 	Zombie();
 
+	void Move(IntRect arena, Vector2f displacement);
 	bool OnHitted();
 	bool IsAlive();
 
 	void Spawn(float x, float y, ZombieTypes type);
-	void Update(float dt, Vector2f playerPos);
+	void Update(float dt, Vector2f playerPos, IntRect arena);
 
 	FloatRect GetGlobalBound();
 	Sprite GetSprite();

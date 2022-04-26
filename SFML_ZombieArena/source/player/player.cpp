@@ -2,16 +2,16 @@
 #include "..\Utils\Utils.h"
 #include "..\Utils\InputManager.h"
 #include "..\Utils\TextureHolder.h"
+#include "..\Object\Bullet.h"
 #include <cmath>
 
 Player::Player()
 	: maxSpeed(START_SPEED), health(START_HEALTH), maxHealth(START_HEALTH),
 	arena(), resolution(), tileSize(0.f), immuneMs(START_IMMUNE_MS)//, velocity(0), accel(START_ACCEL)
-	, textureFileName("graphics/player.png")
+	, textureFileName("graphics/player.png"), bullet(nullptr)
 {
 	
 	sprite.setTexture(TextureHolder::GetTexture(textureFileName));
-
 	Utils::SetOrigin(sprite, PIVOTS::CENTER);
 }
 
@@ -29,10 +29,13 @@ void Player::Move(IntRect arena, Vector2f displacement)
 {
 	position += displacement;
 	// boundary
-	if (position.x < arena.left + 50.f || position.x > arena.left + arena.width - 50.f
-		|| position.y < arena.top + 50.f || position.y > arena.top + arena.height - 50.f)
+	if (position.x < arena.left + 50.f || position.x > arena.left + arena.width - 50.f)
 	{
-		position -= displacement;
+		position.x -= displacement.x;
+	}
+	if (position.y < arena.top + 50.f || position.y > arena.top + arena.height - 50.f)
+	{
+		position.y -= displacement.y;
 	}
 }
 
@@ -126,6 +129,19 @@ void Player::Update(float dt)
 	float radian = atan2(mouseDir.y, mouseDir.x);
 	float degree = (radian * 180.f) / 3.141592f;
 	sprite.setRotation(degree);
+
+	// 총알 업데이트
+	if (InputManager::GetLeftButtonDown(Mouse::Left))
+		Fire();
+	if (nullptr != bullet)
+	{
+		bullet->Update(dt, arena);
+		if (bullet->IsHitted())
+		{
+			delete bullet;
+			bullet = nullptr;
+		}
+	}
 }
 
 void Player::GetHealthItem(int amount)
@@ -150,4 +166,20 @@ void Player::UpgradeSpeed()
 void Player::UpgradeMaxHealth()
 {
 	maxHealth += START_HEALTH * 0.2;
+}
+
+void Player::Fire()
+{
+	// 일단은 한발만 
+	if (nullptr != bullet)
+		return;
+	// 리스트나 벡터로 관리해줘서 장탄수 관리?
+	// 발사 시 총알이 나가는 포지션은 피봇이 우측이어야 함
+	bullet = new Bullet(position.x, position.y);
+	
+}
+
+Bullet* Player::GetBullet() const
+{
+	return bullet;
 }

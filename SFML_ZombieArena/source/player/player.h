@@ -1,9 +1,9 @@
 #pragma once
 #include "SFML/Graphics.hpp"
-#include <string>
 
 using namespace sf;
 
+class Bullet;
 class Player
 {
 private:
@@ -34,12 +34,14 @@ private:
 
 	Time lastHit;
 
+	Bullet* bullet;
+
 public:
 	Player();
 
 	void Spawn(IntRect arena, Vector2i res, int tileSize);
 	
-	void Move(IntRect arena, Vector2f distance);
+	void Move(IntRect arena, Vector2f displacement);
 	bool OnHitted(Time timeHit);
 
 	Time GetLastTime() const ;
@@ -58,4 +60,6 @@ public:
 	void UpgradeSpeed();
 	void UpgradeMaxHealth();
 
+	void Fire();
+	Bullet* GetBullet() const;
 };

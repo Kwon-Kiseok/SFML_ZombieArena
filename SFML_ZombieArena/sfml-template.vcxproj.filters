@@ -14,6 +14,9 @@
     <Filter Include="Enemy">
       <UniqueIdentifier>{1fd3fce3-a6fc-4106-b82f-e553e4710383}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{8b15a3fe-8319-4323-86ef-8e9f08db9518}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\player\player.cpp">
@@ -32,6 +35,12 @@
     <ClCompile Include="source\Enemy\Zombie.cpp">
       <Filter>Enemy</Filter>
     </ClCompile>
+    <ClCompile Include="source\Object\Bullet.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Object\Crosshair.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\player\player.h">
@@ -48,6 +57,12 @@
     </ClInclude>
     <ClInclude Include="source\Enemy\Zombie.h">
       <Filter>Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Object\Bullet.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Object\Crosshair.h">
+      <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
