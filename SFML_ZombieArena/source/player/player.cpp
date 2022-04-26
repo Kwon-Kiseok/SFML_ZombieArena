@@ -174,9 +174,7 @@ void Player::Fire()
 	if (nullptr != bullet)
 		return;
 	// 리스트나 벡터로 관리해줘서 장탄수 관리?
-	// 발사 시 총알이 나가는 포지션은 피봇이 우측이어야 함
 	bullet = new Bullet(position.x, position.y);
-	
 }
 
 Bullet* Player::GetBullet() const

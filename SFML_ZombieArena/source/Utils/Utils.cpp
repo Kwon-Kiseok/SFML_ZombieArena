@@ -17,7 +17,7 @@ void Utils::SetOrigin(Transformable& tr, FloatRect bounds, PIVOTS preset)
 		tr.setOrigin(bounds.width, 0.f);
 		break;
 	case PIVOTS::LEFT:
-		tr.setOrigin(0, bounds.height * 0.5f);
+		tr.setOrigin(0.f, bounds.height * 0.5f);
 		break;
 	case PIVOTS::CENTER:
 		tr.setOrigin(bounds.width * 0.5f, bounds.height * 0.5f);
