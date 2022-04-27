@@ -41,6 +41,9 @@
     <ClCompile Include="source\Object\Crosshair.cpp">
       <Filter>Object</Filter>
     </ClCompile>
+    <ClCompile Include="source\Object\Pickup.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\player\player.h">
@@ -62,6 +65,9 @@
       <Filter>Object</Filter>
     </ClInclude>
     <ClInclude Include="source\Object\Crosshair.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Object\Pickup.h">
       <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>

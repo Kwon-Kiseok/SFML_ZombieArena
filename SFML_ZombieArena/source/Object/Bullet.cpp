@@ -3,8 +3,17 @@
 #include "..\Utils\TextureHolder.h"
 #include "..\Utils\Utils.h"
 #include "..\Object\Crosshair.h"
+#include "..\Enemy\Zombie.h"
 
 #include <iostream>
+
+Bullet::Bullet()
+{
+	speed = DEFAULT_SPEED;
+	isActive = false;
+	shape.setSize(Vector2f(10, 10));
+	Utils::SetOrigin(shape, PIVOTS::CENTER);
+}
 
 Bullet::Bullet(float x, float y)
 	:textureFileName("graphics/bullet.png"), isHitted(false)
@@ -38,6 +47,78 @@ Bullet::Bullet(float x, float y)
 	//Utils::SetOrigin(sprite, PIVOTS::CENTER);
 	// 일단은 총끝에서 나오도록 15만큼 오리진 수정
 	sprite.setOrigin(-15.f, sprite.getLocalBounds().height * 0.5f);
+}
+
+void Bullet::SetActive(bool active)
+{
+	isActive = active;
+}
+
+bool Bullet::IsActive()
+{
+	return isActive;
+}
+
+void Bullet::Shoot(Vector2f pos, Vector2f dir)
+{
+	SetActive(true);
+
+	distance = 0.f;
+	position = pos;
+
+	// clear
+	//std::cout << position.x << ", " << position.y << std::endl;
+
+	shape.setPosition(position);
+	direction = Utils::Normalize(dir); // normalized
+	float degree = Utils::GetAngle(position, position + direction);
+	shape.setRotation(degree);
+}
+
+void Bullet::Stop()
+{
+	SetActive(false);
+}
+
+RectangleShape Bullet::GetShape()
+{
+	return shape;
+}
+
+void Bullet::update(float dt)
+{
+	position += direction * speed * dt;
+	shape.setPosition(position);
+
+	distance += speed * dt;	// scalar
+
+	// 
+	//std::cout << distance << std::endl;
+
+	if (distance > DEFAULT_DISTANCE)
+	{
+		Stop();
+	}
+}
+
+bool Bullet::UpdateCollision(const std::vector<Zombie*>& zombies)
+{
+	FloatRect bounds = shape.getGlobalBounds();
+
+	for (auto zombie : zombies)
+	{
+		if (zombie->IsAlive())
+		{
+			if (bounds.intersects(zombie->GetGlobalBound()))
+			{
+				zombie->OnHitted();
+				Stop();
+
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void Bullet::Update(float dt, IntRect arena)

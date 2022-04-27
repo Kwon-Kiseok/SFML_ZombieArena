@@ -3,16 +3,40 @@
 #include "..\Utils\InputManager.h"
 #include "..\Utils\TextureHolder.h"
 #include "..\Object\Bullet.h"
+#include "..\Object\Pickup.h"
+#include "..\Enemy\Zombie.h"
 #include <cmath>
+#include <algorithm>
+#include <iostream>
 
 Player::Player()
 	: maxSpeed(START_SPEED), health(START_HEALTH), maxHealth(START_HEALTH),
 	arena(), resolution(), tileSize(0.f), immuneMs(START_IMMUNE_MS)//, velocity(0), accel(START_ACCEL)
 	, textureFileName("graphics/player.png"), bullet(nullptr)
 {
-	
 	sprite.setTexture(TextureHolder::GetTexture(textureFileName));
 	Utils::SetOrigin(sprite, PIVOTS::CENTER);
+
+	for (int i = 0; i < BULLET_CACHE_SIZE; ++i)
+	{
+		unUseBullets.push_back(new Bullet());
+	}
+	distanceToMuzzle = 45.f;
+}
+
+Player::~Player()
+{
+	for (auto bullet : unUseBullets)
+	{
+		delete bullet;
+	}
+	unUseBullets.clear();
+
+	for (auto bullet : useBullets)
+	{
+		delete bullet;
+	}
+	useBullets.clear();
 }
 
 void Player::Spawn(IntRect arena, Vector2i res, int tileSize)
@@ -42,8 +66,9 @@ void Player::Move(IntRect arena, Vector2f displacement)
 bool Player::OnHitted(Time timeHit)
 {
 	// 0.2초 동안은 immune
-	if (timeHit.asMicroseconds() - lastHit.asMicroseconds() > immuneMs)
+	if (timeHit.asMilliseconds() - lastHit.asMilliseconds() > immuneMs)
 	{
+		std::cout << timeHit.asSeconds() << std::endl;
 		lastHit = timeHit;
 		health -= 10;
 		return true;
@@ -131,9 +156,31 @@ void Player::Update(float dt)
 	sprite.setRotation(degree);
 
 	// 총알 업데이트
-	if (InputManager::GetLeftButtonDown(Mouse::Left))
-		Fire();
-	if (nullptr != bullet)
+	if (InputManager::GetLeftButtonDown(Mouse::Left) 
+		|| InputManager::GetLeftButton(Mouse::Left))
+	{
+		//Fire();
+		Shoot(Vector2f(mouseDir.x, mouseDir.y));
+	}
+
+	auto it = useBullets.begin();
+	while (it != useBullets.end())
+	{
+		Bullet* bullet = *it;
+		bullet->update(dt);
+
+		if (!bullet->IsActive())
+		{
+			it = useBullets.erase(it);
+			unUseBullets.push_back(bullet);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	/*if (nullptr != bullet)
 	{
 		bullet->Update(dt, arena);
 		if (bullet->IsHitted())
@@ -141,6 +188,47 @@ void Player::Update(float dt)
 			delete bullet;
 			bullet = nullptr;
 		}
+	}*/
+}
+
+bool Player::UpdateCollision(const std::list<Pickup*>& items)
+{
+	bool isCollied = false;
+	FloatRect bounds = sprite.getGlobalBounds();
+
+	for (auto item : items)
+	{
+		if (bounds.intersects(item->GetGlobalBounds()))
+		{
+			item->GotIt();
+		}
+		isCollied = true;
+	}
+
+	return isCollied;
+}
+
+bool Player::UpdateCollision(const std::vector<Zombie*>& zombies)
+{
+	bool isCollied = false;
+
+	for (auto bullet : useBullets)
+	{
+		if (bullet->UpdateCollision(zombies))
+		{
+			isCollied = true;
+		}
+	}
+
+	return isCollied;
+}
+
+void Player::Draw(RenderWindow& window)
+{
+	window.draw(sprite);
+	for (auto bullet : useBullets)
+	{
+		window.draw(bullet->GetShape());
 	}
 }
 
@@ -180,4 +268,24 @@ void Player::Fire()
 Bullet* Player::GetBullet() const
 {
 	return bullet;
+}
+
+void Player::Shoot(Vector2f dir)
+{
+	dir = Utils::Normalize(dir);
+	Vector2f spawnPos = position + dir * distanceToMuzzle;
+
+	if (unUseBullets.empty())
+	{
+		for (int i = 0; i < BULLET_CACHE_SIZE; ++i)
+		{
+			unUseBullets.push_back(new Bullet());
+		}
+	}
+
+	Bullet* bullet = unUseBullets.front();
+	unUseBullets.pop_front();
+
+	useBullets.push_back(bullet);
+	bullet->Shoot(spawnPos, dir);
 }

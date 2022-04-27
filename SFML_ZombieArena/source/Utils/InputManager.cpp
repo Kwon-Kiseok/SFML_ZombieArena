@@ -5,6 +5,8 @@ std::map<Axis, AxisInfo> InputManager::mapAxis;
 std::list<Keyboard::Key> InputManager::OnKeysUp;
 std::list<Keyboard::Key> InputManager::OnKeysDown;
 std::list<Keyboard::Key> InputManager::OnKeysPress;
+std::list<Mouse::Button> InputManager::OnButtonUp;
+std::list<Mouse::Button> InputManager::OnButtonDown;
 std::list<Mouse::Button> InputManager::OnButtonPress;
 
 void InputManager::Init()
@@ -54,8 +56,10 @@ void InputManager::ClearPrevInput()
 		OnKeysUp.clear();
 	if (!OnKeysDown.empty())
 		OnKeysDown.clear();
-	if (!OnButtonPress.empty())
-		OnButtonPress.clear();
+	if (!OnButtonDown.empty())
+		OnButtonDown.clear();
+	if (!OnButtonUp.empty())
+		OnButtonUp.clear();
 }
 
 void InputManager::ProcessInput(const Event& event)
@@ -80,7 +84,16 @@ void InputManager::ProcessInput(const Event& event)
 	}
 		break;
 	case Event::MouseButtonPressed:
+	{
+		OnButtonDown.push_back(event.mouseButton.button);
 		OnButtonPress.push_back(event.mouseButton.button);
+	}
+		break;
+	case Event::MouseButtonReleased:
+	{
+		OnButtonPress.remove(event.mouseButton.button);
+		OnButtonUp.push_back(event.mouseButton.button);
+	}
 		break;
 	default:
 		break;
@@ -219,6 +232,18 @@ Vector2i InputManager::GetMousePosition()
 
 bool InputManager::GetLeftButtonDown(Mouse::Button button)
 {
+	auto it = std::find(OnButtonDown.begin(), OnButtonDown.end(), button);
+	return it != OnButtonDown.end();
+}
+
+bool InputManager::GetLeftButton(Mouse::Button button)
+{
 	auto it = std::find(OnButtonPress.begin(), OnButtonPress.end(), button);
 	return it != OnButtonPress.end();
+}
+
+bool InputManager::GetLeftButtonUp(Mouse::Button button)
+{
+	auto it = std::find(OnButtonUp.begin(), OnButtonUp.end(), button);
+	return it != OnButtonUp.end();
 }

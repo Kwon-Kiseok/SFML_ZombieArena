@@ -19,6 +19,7 @@ struct ZombieInfo
 	int health;
 };
 
+class Player;
 class Zombie
 {
 private:
@@ -46,6 +47,8 @@ public:
 
 	void Spawn(float x, float y, ZombieTypes type);
 	void Update(float dt, Vector2f playerPos, IntRect arena);
+
+	bool UpdateCollision(Time time, Player& player);
 
 	FloatRect GetGlobalBound();
 	Sprite GetSprite();

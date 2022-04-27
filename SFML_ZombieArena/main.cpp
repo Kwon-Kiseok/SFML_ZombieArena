@@ -5,6 +5,7 @@
 #include ".\source\Enemy\Zombie.h"
 #include ".\source\Object\Bullet.h"
 #include ".\source\Object\Crosshair.h"
+#include ".\source\Object\Pickup.h"
 #include "source/Utils/TextureHolder.h"
 #include <iostream>
 
@@ -107,6 +108,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Zombie Arena!", Style::Default);
     window.setMouseCursorVisible(false);
     View mainView(FloatRect(0, 0, resolution.x, resolution.y));
+    View uiView(FloatRect(0, 0, resolution.x, resolution.y));
 
     InputManager::Init();
 
@@ -114,15 +116,25 @@ int main()
     ARENA.width = 500;
     ARENA.height = 500;
 
+    Pickup healthPickup(PICKUP_TYPES::Healpack);
+    Pickup ammoPickup(PICKUP_TYPES::Ammo);
+    healthPickup.SetArena(ARENA);
+    ammoPickup.SetArena(ARENA);
+
+    std::list<Pickup*> items;
+    items.push_back(&ammoPickup);
+    items.push_back(&healthPickup);
+
     Player player;
     player.Spawn(ARENA, resolution, 0.f);
 
     Crosshair crosshair;
 
     std::vector<Zombie*> zombies;
-    CreateZombies(zombies, 50, ARENA);
+    CreateZombies(zombies, 10, ARENA);
 
     Clock clock;
+    Time playTime;
 
     sf::Texture texBackground = TextureHolder::GetTexture("graphics/background_sheet.png");
     texBackground.loadFromFile("graphics/background_sheet.png");
@@ -133,6 +145,8 @@ int main()
     while (window.isOpen())
     {
         Time dt = clock.restart();
+        playTime += dt;
+
         sf::Event event;
 
         InputManager::ClearPrevInput();
@@ -158,19 +172,48 @@ int main()
             zombie->Update(dt.asSeconds(), player.GetPosition(), ARENA);
         }
 
+        ammoPickup.Update(dt.asSeconds());
+        healthPickup.Update(dt.asSeconds());
+
+        // collision check
+        player.UpdateCollision(zombies);
+        for (auto zombie : zombies)
+        {
+            if (zombie->UpdateCollision(playTime, player))
+                break;                                    
+        }
+        player.UpdateCollision(items);
+
+
         window.clear();
         window.setView(mainView);
         window.draw(tileMap, &texBackground);
+
+        if (ammoPickup.IsSpawned())
+        {
+            window.draw(ammoPickup.GetSprite());
+        }
+        if (healthPickup.IsSpawned())
+        {
+            window.draw(healthPickup.GetSprite());
+        }
 
         for (auto zombie : zombies)
         {
             window.draw(zombie->GetSprite());
         }
 
-        window.draw(player.GetSprite());
+        /*window.draw(player.GetSprite());
         if(nullptr != player.GetBullet())
-            window.draw(player.GetBullet()->GetSprite());
+            window.draw(player.GetBullet()->GetSprite());*/
+        player.Draw(window);
         window.draw(crosshair.GetSprite());
+
+
+        window.setView(uiView);
+        // UI Draws
+
+
         window.display();
     }
 

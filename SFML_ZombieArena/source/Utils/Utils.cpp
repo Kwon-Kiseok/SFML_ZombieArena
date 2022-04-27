@@ -59,3 +59,27 @@ int Utils::RandomRange(int min, int max)
 	std::uniform_int_distribution<int> dis(min, max);
 	return dis(gen);
 }
+
+float Utils::GetLength(const Vector2f& vector)
+{
+	return sqrt(vector.x * vector.x + vector.y * vector.y);
+}
+
+Vector2f Utils::Normalize(Vector2f vector)
+{
+	float length = GetLength(vector);
+	if (length > 0)
+	{
+		vector /= length;
+	}
+
+	return vector;
+}
+
+float Utils::GetAngle(const Vector2f& from, const Vector2f& to)
+{
+	Vector2f dir = to - from;
+	float radian = atan2(dir.y, dir.x);
+	float degree = (radian * 180.f) / 3.141592f;
+	return degree;
+}

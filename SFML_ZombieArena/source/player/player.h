@@ -1,9 +1,11 @@
 #pragma once
 #include "SFML/Graphics.hpp"
-
+#include <list>
 using namespace sf;
 
+class Zombie;
 class Bullet;
+class Pickup;
 class Player
 {
 private:
@@ -35,10 +37,14 @@ private:
 	Time lastHit;
 
 	Bullet* bullet;
-
+	
+	const int BULLET_CACHE_SIZE = 1000;
+	std::list<Bullet*> unUseBullets;
+	std::list<Bullet*> useBullets;
+	float distanceToMuzzle;
 public:
 	Player();
-
+	~Player();
 	void Spawn(IntRect arena, Vector2i res, int tileSize);
 	
 	void Move(IntRect arena, Vector2f displacement);
@@ -54,6 +60,10 @@ public:
 	void SetDirection(Vector2f dir);
 
 	void Update(float dt);
+	bool UpdateCollision(const std::list<Pickup*>& items);
+	bool UpdateCollision(const std::vector<Zombie*>& zombies);
+
+	void Draw(RenderWindow& window);
 
 	void GetHealthItem(int amount);
 
@@ -62,4 +72,6 @@ public:
 
 	void Fire();
 	Bullet* GetBullet() const;
+
+	void Shoot(Vector2f dir);
 };

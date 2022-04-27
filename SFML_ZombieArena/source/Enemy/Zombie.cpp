@@ -1,6 +1,9 @@
 #include "Zombie.h"
 #include "..\Utils\TextureHolder.h"
 #include "..\Utils\Utils.h"
+#include "..\player\player.h"
+
+#include <iostream>
 
 std::vector<ZombieInfo> Zombie::zombieInfo;
 bool Zombie::isInitInfo = false;
@@ -54,6 +57,7 @@ void Zombie::Move(IntRect arena, Vector2f displacement)
 
 bool Zombie::OnHitted()
 {
+	std::cout << "HITTED" << std::endl;
 	return false;
 }
 
@@ -85,16 +89,35 @@ void Zombie::Update(float dt, Vector2f playerPos, IntRect arena)
 	Vector2f dir(h, v);
 	float length = sqrt(dir.x * dir.x + dir.y * dir.y);
 
-	dir /= length;
-
-	Vector2f displacement = dir * speed * dt;
-	Move(arena,displacement);
+	if (length > 0)
+	{
+		dir /= length;
+	}
+	if (length < speed * dt * 0.5f)
+	{
+		position = playerPos;
+	}
+	else
+	{
+		Vector2f displacement = dir * speed * dt;
+		Move(arena, displacement);
+	}
 	sprite.setPosition(position);
 
 	// È¸Àü
 	float radian = atan2(dir.y, dir.x);
 	float degree = (radian * 180.f) / 3.141592f;
 	sprite.setRotation(degree);
+}
+
+bool Zombie::UpdateCollision(Time time, Player& player)
+{
+	if (sprite.getGlobalBounds().intersects(player.GetGlobalBound()))
+	{
+		return player.OnHitted(time);
+	}
+
+	return false;
 }
 
 FloatRect Zombie::GetGlobalBound()
